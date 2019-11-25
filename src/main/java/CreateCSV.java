@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -14,18 +15,17 @@ import java.util.stream.Stream;
 
 public class CreateCSV {
 
-    private static Logger LOG = LoggerFactory.getLogger("CreateCSV");
-
+    private static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static String[] counters = {"phys", "size", "rss", "huge", "anon", "file", "forest", "cache", "registry", "unclosed", "swap"};
     private static Map<String, List> group = new HashMap<String, List>();
     private static List<String> xaxis = new ArrayList<String>();
+
     public static void main(String[] args) {
         String fileName = "src/main/resources/SampleLogFile.txt";
         for (String s : counters) {
             group.put(s, new ArrayList<Long>());
         }
         try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
-            //stream.forEach(l) -> {processLine(l);};
             stream.filter(s -> s.contains("Info: Memory")).forEach(s -> processLine(s));
         } catch (IOException e) {
             e.printStackTrace();
@@ -35,15 +35,11 @@ public class CreateCSV {
 
     private static void processLine(String s) {
         String[] sArr = s.split(" ");
-        //LOG.info("Len " + sArr.length);
-        String [] xA = sArr[1].split("\\.");
-        //LOG.info("DT:" + xA[0]);
-//        xaxis.add(sArr[1].split(".")[0]);
+        String[] xA = sArr[1].split("\\.");
         xaxis.add(xA[0]);
         List<String> set = new ArrayList<String>();
         for (String st : sArr) {
             if (st.contains("=")) {
-                //LOG.info("Cur S: "+st);
                 processPair(st, set);
             }
         }
@@ -51,7 +47,7 @@ public class CreateCSV {
         int size = group.get(set.get(0)).size();
         for (String it : counters) {
             if (group.get(it).size() < size) {
-                LOG.debug("need to add: " + it);
+                // LOG.debug("need to add: " + it);
                 List l = group.get(it);
                 l.add(0);
                 group.put(it, l);
