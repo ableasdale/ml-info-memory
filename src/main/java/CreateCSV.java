@@ -1,8 +1,9 @@
-
-
+import com.opencsv.CSVWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
@@ -31,6 +32,27 @@ public class CreateCSV {
             e.printStackTrace();
         }
         LOG.info("Debugger check");
+
+        CSVWriter writer = null;
+        try {
+            writer = new CSVWriter(new FileWriter("yourfile.csv"));
+            String[] headers = { "time", "phys", "size", "rss", "huge", "anon", "file", "forest", "cache", "registry", "unclosed", "swap"};
+            writer.writeNext(headers);
+            for (int i=0; i<xaxis.size(); i++){
+                List l = new ArrayList<String>();
+                l.add(xaxis.get(i));
+                for (String it : counters) {
+                    l.add(group.get(it).get(i));
+                }
+               // String[] strings = (String[]) l.toArray(new String[l.size()]);
+                String[] strings = (String[]) l.parallelStream().toArray(String[]::new);
+                writer.writeNext(strings);
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private static void processLine(String s) {
